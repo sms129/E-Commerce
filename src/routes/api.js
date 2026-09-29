@@ -5,6 +5,7 @@ const userController = require("../controllers/userController.js");
 const categoryController = require("../controllers/categoryController.js");
 const brandController = require("../controllers/brandController.js");
 const productController = require("../controllers/productController.js");
+const reviewController = require("../controllers/reviewController.js");
 const authVerificationAdmin = require("../middlewares/authVerificationAdmin.js");
 const authVerificationUser = require("../middlewares/authVerificationUser.js");
 
@@ -35,21 +36,34 @@ router.get(
 );
 router.get("/single-product/:id",productController.singleProduct); 
 
-router.put("/update-product/:id",productController.updateProduct); 
-router.delete("/delete-product/:id",productController.deleteProduct); 
+router.put("/update-product/:id",authVerificationAdmin,productController.updateProduct); 
+router.delete("/delete-product/:id",authVerificationAdmin,productController.deleteProduct); 
 module.exports = router;
 
 
 //! ================= category =================
-router.post("/create-category", categoryController.createCategory);
+router.post("/create-category",authVerificationAdmin, categoryController.createCategory);
 router.get("/all-category/:per_page/:page_no", categoryController.allCategory);
 router.get("/single-category/:id",categoryController.singleCategory);
-router.put("/update-category/:id",categoryController.updateCategory);
-router.delete("/delete-category/:id",categoryController.deleteCategory);
+router.put("/update-category/:id",authVerificationAdmin, categoryController.updateCategory);
+router.delete("/delete-category/:id",authVerificationAdmin, categoryController.deleteCategory);
 
 //! ================= brand =================
-router.post("/create-brand", brandController.createBrand);
+router.post("/create-brand",authVerificationAdmin, brandController.createBrand);
 router.get("/all-brand/:per_page/:page_no", brandController.allBrand);
 router.get("/single-brand/:id",brandController.singleBrand);
-router.put("/single-brand/:id",brandController.singleBrand);
-router.delete("/delete-brand/:id",brandController.deleteBrand);
+router.put("/single-brand/:id",authVerificationAdmin, brandController.singleBrand);
+router.delete("/delete-brand/:id",authVerificationAdmin, brandController.deleteBrand);
+
+
+//! ================= review =================
+router.post("/create-review",authVerificationUser, reviewController.createReview);
+router.get("/all-review/:per_page/:page_no",authVerificationUser, reviewController.allReview);
+router.get(
+  "/all-review-by-product/:product_id",
+  authVerificationUser,
+  reviewController.allReviewByProducts
+);
+
+
+
