@@ -110,7 +110,7 @@ exports.allProduct = async (req, res) => {
         from: "categories",
         localField: "category_id",
         foreignField: "_id",
-        as: "category",
+        as: "category",  //after searching its create a array name category where it kept all info
       },
     };
 
@@ -166,7 +166,7 @@ exports.singleProduct = async (req, res) => {
     const id = new ObjectId(req.params.id);   //param id used in api to search product thats how we get this
 
     let matchStage = {
-      $match: { _id: id },
+      $match: { _id: id },  //database e _id ase
     };
 
     let joinWithCategory = {
@@ -197,6 +197,88 @@ exports.singleProduct = async (req, res) => {
       success: true,
       message: "Product fetched successfully",
       data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.toString(),
+      message: "Something went wrong.",
+    });
+  }
+};
+
+
+// Product update single
+exports.updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params; //taking id direct because later findbyidandupdate direct make it objectid,its build in so we donot have to make it now
+    const {
+      title,
+      images,
+      sort_description,
+      price,
+      is_discount,
+      discount_price,
+      remark,
+      stock,
+      color,
+      size,
+      description,
+      category_id,
+      brand_id,
+    } = req.body;
+
+    if (discount_price > price) {
+      return res.status(200).json({
+        success: false,
+        message: "The discount price must be smaller than the main price.",
+      });
+    }
+
+    let data = await productModel.findByIdAndUpdate(
+      id,
+      {
+        title,
+        images,
+        sort_description,
+        price,
+        is_discount,
+        discount_price,
+        remark,
+        stock,
+        color,
+        size,
+        description,
+        category_id,
+        brand_id,
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.toString(),
+      message: "Something went wrong.",
+    });
+  }
+};
+
+
+//! Product delete single
+exports.deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await productModel.findByIdAndDelete(id);
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
     });
   } catch (error) {
     res.status(500).json({

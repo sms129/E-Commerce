@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const adminController = require("../controllers/adminController.js");
 const userController = require("../controllers/userController.js");
+const categoryController = require("../controllers/categoryController.js");
 const productController = require("../controllers/productController.js");
 const authVerificationAdmin = require("../middlewares/authVerificationAdmin.js");
 const authVerificationUser = require("../middlewares/authVerificationUser.js");
@@ -33,4 +34,15 @@ router.get(
 );
 router.get("/single-product/:id",productController.singleProduct); 
 
+router.put("/update-product/:id",productController.updateProduct); 
+router.delete("/delete-product/:id",productController.deleteProduct); 
 module.exports = router;
+
+
+//! ================= category =================
+router.post("/create-category", categoryController.createCategory);
+router.get("/all-category/:per_page/:page_no", categoryController.allCategory);
+router.get("/single-category/:id",categoryController.singleCategory);
+router.put("/update-category/:id",categoryController.updateCategory);
+router.delete("/delete-category/:id",categoryController.deleteCategory);
+
