@@ -70,7 +70,7 @@ exports.allCategory = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Categories fetched successfully",
-      data: categories,
+      data: categories[0],
     });
   } catch (error) {
     res.status(500).json({

@@ -116,7 +116,7 @@ exports.allProduct = async (req, res) => {
 
     let facetStage = {  //showing the found product by a good formation, page,sort and category theke joinwithcategory theke ja ja pailam ta dekhabe ar ki ki dekhabe ta project e bola ase
       $facet: {
-        totalCount: [{ $count: "count" }],
+        totalCount: [{ $count: "count" }],  //jotota product ashbe products e shb ekbare count kore dibe.overall.page e joto dekhak matter ta eta overall count korbe
         products: [
           { $sort: sortStage },
           { $skip: skipRow },

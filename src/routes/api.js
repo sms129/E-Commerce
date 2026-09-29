@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require("../controllers/adminController.js");
 const userController = require("../controllers/userController.js");
 const categoryController = require("../controllers/categoryController.js");
+const brandController = require("../controllers/brandController.js");
 const productController = require("../controllers/productController.js");
 const authVerificationAdmin = require("../middlewares/authVerificationAdmin.js");
 const authVerificationUser = require("../middlewares/authVerificationUser.js");
@@ -46,3 +47,9 @@ router.get("/single-category/:id",categoryController.singleCategory);
 router.put("/update-category/:id",categoryController.updateCategory);
 router.delete("/delete-category/:id",categoryController.deleteCategory);
 
+//! ================= brand =================
+router.post("/create-brand", brandController.createBrand);
+router.get("/all-brand/:per_page/:page_no", brandController.allBrand);
+router.get("/single-brand/:id",brandController.singleBrand);
+router.put("/single-brand/:id",brandController.singleBrand);
+router.delete("/delete-brand/:id",brandController.deleteBrand);
