@@ -7,6 +7,9 @@ const productModel = require("../models/productModel");
 const {default : axios } = require("axios");
 const ObjectId = mongoose.Types.ObjectId;
 
+
+let redirect_url = "/cart-thank-you";
+
 // invoice create
 exports.createInvoice = async (req, res) => {
   try {
@@ -350,5 +353,84 @@ exports.readInvoiceProductListSingleUser = async (req, res) => {
 };
 
 
+// payment-success
+exports.paymentSuccess = async (req, res) => {
+  try {
+    let trx_id = req.params.trx_id;
+
+    await invoiceModel.updateOne(
+      { tran_id: trx_id }, //first one for quary, eita diye khujbe id ta 
+      { payment_status: "success" } //2nd one is for update
+    );
+
+    res.redirect(redirect_url);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.toString(),
+      message: "Something went wrong.",
+    });
+  }
+};
 
 
+// payment-cancel
+exports.paymentCancel = async (req, res) => {
+  try {
+    let trx_id = req.params.trx_id;
+
+    await invoiceModel.updateOne(
+      { tran_id: trx_id },
+      { payment_status: "cancel" }
+    );
+
+    res.redirect(redirect_url);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.toString(),
+      message: "Something went wrong.",
+    });
+  }
+};
+
+
+// payment-fail
+exports.paymentFail = async (req, res) => {
+  try {
+    let trx_id = req.params.trx_id;
+
+    await invoiceModel.updateOne(
+      { tran_id: trx_id },
+      { payment_status: "fail" }
+    );
+
+    res.redirect(redirect_url);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.toString(),
+      message: "Something went wrong.",
+    });
+  }
+};
+
+
+// payment-ipn
+exports.paymentIpn = async (req, res) => {
+  try {
+    let trx_id = req.params.trx_id;
+    // Here do something you have to need . . . . . . er can send anything to user
+
+    res.status(200).json({
+      success: true,
+      message: "Here do something you have to need . . . . . . ",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.toString(),
+      message: "Something went wrong.",
+    });
+  }
+};
