@@ -6,6 +6,7 @@ const categoryController = require("../controllers/categoryController.js");
 const brandController = require("../controllers/brandController.js");
 const productController = require("../controllers/productController.js");
 const reviewController = require("../controllers/reviewController.js");
+const cartController = require("../controllers/cartController.js");
 const authVerificationAdmin = require("../middlewares/authVerificationAdmin.js");
 const authVerificationUser = require("../middlewares/authVerificationUser.js");
 
@@ -38,7 +39,6 @@ router.get("/single-product/:id",productController.singleProduct);
 
 router.put("/update-product/:id",authVerificationAdmin,productController.updateProduct); 
 router.delete("/delete-product/:id",authVerificationAdmin,productController.deleteProduct); 
-module.exports = router;
 
 
 //! ================= category =================
@@ -58,12 +58,34 @@ router.delete("/delete-brand/:id",authVerificationAdmin, brandController.deleteB
 
 //! ================= review =================
 router.post("/create-review",authVerificationUser, reviewController.createReview);
-router.get("/all-review/:per_page/:page_no",authVerificationUser, reviewController.allReview);
+router.get("/all-review/:per_page/:page_no", reviewController.allReview);
 router.get(
   "/all-review-by-product/:product_id",
-  authVerificationUser,
   reviewController.allReviewByProducts
 );
 
 
+//! ================= cart =================
+router.post("/create-cart",authVerificationUser, cartController.createCart);
+router.get("/read-cart",authVerificationUser, cartController.readCart);
+router.put("/update-cart/:cart_id",authVerificationUser, cartController.updateCart);
+router.delete("/delete-cart/:cart_id",authVerificationUser, cartController.deleteCart);
 
+
+//! ================= for invoice and payment =================
+
+//--for user:
+
+
+
+
+
+
+
+
+
+
+
+
+
+module.exports = router;
