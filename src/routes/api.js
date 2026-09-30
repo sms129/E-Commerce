@@ -84,7 +84,7 @@ router.get(
 );
 
 router.get(
-  "/read-single-invoice-single-user/:invoice_id",
+  "/read-single-invoice-single-user/:invoice_id",authVerificationUser,
   invoiceController.readSingleInvoiceSingleUser
 );
 
@@ -115,6 +115,25 @@ router.post(
   invoiceController.paymentIpn
 );
 
+
+
+
+// for admin:
+
+
+
+router.get(
+  "/all-order-list/:per_page/:page_no",
+  authVerificationAdmin,
+  invoiceController.allOrderList
+);
+
+
+router.get(
+  "/export-csv",
+  authVerificationAdmin,
+  invoiceController.exportCSV
+);
 
 
 

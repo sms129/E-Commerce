@@ -5,6 +5,7 @@ const userModel = require("../models/userModel");
 const invoiceProductModel = require("../models/invoiceProductModel");
 const productModel = require("../models/productModel");
 const {default : axios } = require("axios");
+const {Parser} = require ("json2csv");
 const ObjectId = mongoose.Types.ObjectId;
 
 
@@ -420,7 +421,7 @@ exports.paymentFail = async (req, res) => {
 exports.paymentIpn = async (req, res) => {
   try {
     let trx_id = req.params.trx_id;
-    // Here do something you have to need . . . . . . er can send anything to user
+    // Here do something you have to need . . . . . . we can send anything to user
 
     res.status(200).json({
       success: true,
@@ -431,6 +432,123 @@ exports.paymentIpn = async (req, res) => {
       success: false,
       error: error.toString(),
       message: "Something went wrong.",
+    });
+  }
+};
+
+
+
+
+//! all Order List by date filter
+exports.allOrderList = async (req, res) => {
+  try {
+    const page_no = Number(req.params.page_no) || 1;
+    const per_page = Number(req.params.per_page) || 10;
+
+    const skipRow = (page_no - 1) * per_page;
+    // Optional date filter
+    const { from, to } = req.query;
+
+    // Simple match: if no date, show all invoices
+    const fromDate = from
+      ? new Date(`${from}T00:00:00`)  //jodi date deya hoy tahole from ei date theke dekhabe nahole 1970 theke
+      : new Date("1970-01-01T00:00:00");
+
+    const toDate = to ? new Date(`${to}T23:59:59.999`) : new Date();
+
+    const matchStage = {
+      createdAt: {
+        $gte: fromDate,$lte: toDate,
+      },
+    };
+
+    let joinStageWithProduct = {
+      $lookup: {
+        from: "invoicesproducts",
+        localField: "_id",
+        foreignField: "invoice_id",
+        as: "product",
+      },
+    };
+
+    // $facet for total count + paginated data
+    const facetStage = {
+      $facet: {
+        totalCount: [{ $count: "count" }],
+        products: [
+          { $sort: { createdAt: -1 } },
+          {$skip: skipRow },
+          { $limit: per_page },
+          joinStageWithProduct,
+        ],
+      },
+    };
+
+    // Aggregate pipeline
+    const products = await invoiceModel.aggregate([
+      { $match: matchStage },
+      facetStage,
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: "Invoices fetched successfully",
+      data: products[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong.",
+      error: error.toString(),
+    });
+  }
+};
+
+
+//! exportCSV
+exports.exportCSV = async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    // Simple match: if no date, show all invoices
+    const fromDate = from
+      ? new Date(`${from}T00:00:00`)
+      : new Date("1970-01-01T00:00:00");
+    const toDate = to ? new Date(`${to}T23:59:59.999`) : new Date();
+
+    const matchStage = {
+      createdAt: {
+        $gte: fromDate,$lte: toDate,
+      },
+    };
+
+    // Get invoices
+    const data = await invoiceModel.find(matchStage).sort({ createdAt: -1 });
+
+    // Select columns for CSV
+    const fields = [
+      "_id",
+      "user_id",
+      "payable",
+      "deliver_status",
+      "payment_status",
+      "total",
+      "vat",
+      "createdAt",
+    ];
+
+    // Convert to CSV
+    const parser = new Parser({ fields });
+    const csv = parser.parse(data); //here csv is created
+
+    // Send file
+    res.header("Content-Type", "text/csv");
+    res.attachment("invoices.csv");
+    res.send(csv);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong.",
+      error: error.toString(),
     });
   }
 };
