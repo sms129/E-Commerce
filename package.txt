@@ -6,6 +6,7 @@
  4)npm run dev- nodemon script e boshanor process: 
       --first : "dev": "nodemon index.js" script e boshabo Package.json e. then npm install -D nodemon then npm run dev
  5)node index js normal server chaalu 
+ 6)npm i axios for ssl link work--payment init url hit korbe
 
 
 all things:

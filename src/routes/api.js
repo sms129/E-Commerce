@@ -7,6 +7,7 @@ const brandController = require("../controllers/brandController.js");
 const productController = require("../controllers/productController.js");
 const reviewController = require("../controllers/reviewController.js");
 const cartController = require("../controllers/cartController.js");
+const invoiceController = require("../controllers/invoiceController.js");
 const authVerificationAdmin = require("../middlewares/authVerificationAdmin.js");
 const authVerificationUser = require("../middlewares/authVerificationUser.js");
 
@@ -75,7 +76,23 @@ router.delete("/delete-cart/:cart_id",authVerificationUser, cartController.delet
 //! ================= for invoice and payment =================
 
 //--for user:
+router.post("/create-invoice",authVerificationUser, invoiceController.createInvoice);
+router.get(
+  "/read-all-invoice-single-user/:per_page/:page_no",
+  authVerificationUser,
+  invoiceController.readAllInvoiceSingleUser
+);
 
+router.get(
+  "/read-single-invoice-single-user/:invoice_id",
+  invoiceController.readSingleInvoiceSingleUser
+);
+
+router.get(
+  "/read-invoice-product-list-single-user/:per_page/:page_no",
+  authVerificationUser,
+  invoiceController.readInvoiceProductListSingleUser
+);
 
 
 

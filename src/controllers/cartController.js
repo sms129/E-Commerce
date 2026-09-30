@@ -185,7 +185,7 @@ exports.updateCart = async (req, res) => {
 
     let user_id = req.headers._id;
     let cart_id = new ObjectId(req.params.cart_id);
-    let initQTY = 1;  //cart e 1 ta product increase korse,jodi abar kore, prottek baar alada alada updatecart call hobe
+    let initQTY = 1;  //cart e 1 ta product increase korse,jodi abar increase kore, prottek baar alada alada updatecart call hobe
 
     if (inc) {   //dekhtese cart e increase korse naki decrease, jodi increase kore
       // Find the stock products
