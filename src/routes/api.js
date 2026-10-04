@@ -8,6 +8,7 @@ const productController = require("../controllers/productController.js");
 const reviewController = require("../controllers/reviewController.js");
 const cartController = require("../controllers/cartController.js");
 const invoiceController = require("../controllers/invoiceController.js");
+const fileController = require("../controllers/fileController.js");
 const authVerificationAdmin = require("../middlewares/authVerificationAdmin.js");
 const authVerificationUser = require("../middlewares/authVerificationUser.js");
 
@@ -143,9 +144,20 @@ router.put(
 );
 
 
+//file upload
 
+router.post(
+  "/file-upload",
+  authVerificationAdmin,
+  fileUpload,
+  fileController.fileUpload
+);
 
+//get all file
+router.get("/all-file/:per_page/:page_no", fileController.allFile);
 
+//file remove
+router.post("/file-remove", authVerificationAdmin, fileController.fileRemove);
 
 
 
