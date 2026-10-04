@@ -364,7 +364,7 @@ exports.paymentSuccess = async (req, res) => {
       { payment_status: "success" } //2nd one is for update
     );
 
-    res.redirect(redirect_url);
+    res.redirect(redirect_url);  // it will take in another page. upore deya ase. 
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -549,6 +549,110 @@ exports.exportCSV = async (req, res) => {
       success: false,
       message: "Something went wrong.",
       error: error.toString(),
+    });
+  }
+};
+
+
+//! invoice update
+exports.updateInvoice = async (req, res) => {
+  try {
+    const { _id, user_id, deliver_status } = req.body;
+
+    // Step 1: Find the invoice
+    const checkInvoice = await invoiceModel.findById(_id);
+    if (!checkInvoice) {
+      return res.status(200).json({
+        success: false,
+        message: "Invoice not found!",
+      });
+    }
+
+    // Step 2: Prevent multiple updates
+    if (checkInvoice.deliver_status === "delivered") {
+      return res.status(200).json({
+        success: false,
+        message: "Product already delivered!",
+      });
+    }
+
+    if (checkInvoice.deliver_status === "cancel") {
+      return res.status(200).json({
+        success: false,
+        message: "Product already canceled!",
+      });
+    }
+
+    // Step 3: Handle logic based on payment_status
+    const paymentStatus = checkInvoice.payment_status;
+
+    if (paymentStatus === "success") {
+      // Payment successful: allow deliver or cancel
+      if (deliver_status === "delivered") {
+        // Update invoice as delivered
+        const data = await invoiceModel.findByIdAndUpdate(
+          _id,
+          { deliver_status },
+          { new: true }
+        );
+        return res.status(200).json({
+          success: true,
+          message: "Product delivered successfully!",
+          data,
+        });
+      }
+
+      if (deliver_status === "cancel") {
+        return res.status(200).json({
+          success: false,
+          message: "Payment is success. You can't cancel!",
+        });
+      }
+
+      // Invalid deliver_status
+      return res.status(200).json({
+        success: false,
+        message: "Invalid deliver status update!",
+      });
+    } else {
+      // Payment not successful: allow only cancel
+      if (deliver_status === "cancel") {
+        const invoiceProducts = await invoiceProductModel.find({
+          invoice_id: _id,
+        });
+
+        // Restock each product
+        for (const item of invoiceProducts) {
+          await productModel.updateOne(
+            { _id: item.product_id },
+            { $inc: { stock: item.qty } }
+          );
+        }
+
+        // Update invoice as canceled
+        const data = await invoiceModel.findByIdAndUpdate(
+          _id,
+          { deliver_status },
+          { new: true }
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: "Unpaid order canceled and stock restored!",
+          data,
+        });
+      }
+
+      return res.status(200).json({
+        success: false,
+        message: "Cannot deliver because payment was not successful!",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong.",
+      error: error.message,
     });
   }
 };

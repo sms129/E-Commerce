@@ -136,6 +136,12 @@ router.get(
 );
 
 
+router.put(
+  "/update-invoice",
+  authVerificationAdmin,
+  invoiceController.updateInvoice
+);
+
 
 
 
