@@ -65,5 +65,33 @@ exports.allFile = async (req, res) => {
 };
 
 
+// File Remove
+exports.fileRemove = async (req, res) => {
+    try {
+        let _id = req.body._id;
+        let filename = req.body.filename;
 
+        const filePath = path.join(__dirname, '../../uploads/${filename}');
+
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.log(err);
+            }
+        });
+
+        const data = await FileModel.deleteOne({ _id, filename });
+
+        res.status(200).json({
+            success: true,
+            message: "File Remove successfully.",
+            data,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.toString(),
+            message: "Something went wrong.",
+        });
+    }
+};
 
