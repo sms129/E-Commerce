@@ -98,7 +98,7 @@ exports.createInvoice = async (req, res) => {
       let val_id = "val-" + Date.now() + Math.floor(Math.random() * 90000000);
 
       // =========== Step-4: Create invoice ===========
-      let createInvoice = await invoiceModel.create({
+      let createInvoice = await invoiceModel.create({   //saving in database
         user_id: user_id,
         payable: parseFloat(totalPayable).toFixed(2),
         cus_details: cus_details,

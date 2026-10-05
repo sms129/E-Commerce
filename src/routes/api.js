@@ -9,6 +9,7 @@ const reviewController = require("../controllers/reviewController.js");
 const cartController = require("../controllers/cartController.js");
 const invoiceController = require("../controllers/invoiceController.js");
 const fileController = require("../controllers/fileController.js");
+const dashboardSummaryController = require("../controllers/dashboardSummaryController.js");
 const authVerificationAdmin = require("../middlewares/authVerificationAdmin.js");
 const authVerificationUser = require("../middlewares/authVerificationUser.js");
 
@@ -160,7 +161,8 @@ router.get("/all-file/:per_page/:page_no", fileController.allFile);
 router.post("/file-remove", authVerificationAdmin, fileController.fileRemove);
 
 
-
+// Dashboard Summary
+router.get("/dashboard-summary", dashboardSummaryController.dashboardSummary);
 
 
 
