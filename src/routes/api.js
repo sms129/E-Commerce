@@ -12,6 +12,7 @@ const fileController = require("../controllers/fileController.js");
 const dashboardSummaryController = require("../controllers/dashboardSummaryController.js");
 const authVerificationAdmin = require("../middlewares/authVerificationAdmin.js");
 const authVerificationUser = require("../middlewares/authVerificationUser.js");
+const fileUpload = require("../middlewares/fileUpload.js");
 
 
 //! ================= For Super admin =================

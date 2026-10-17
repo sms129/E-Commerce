@@ -16,22 +16,15 @@ const router= require("./src/routes/api");
 dotENV.config();
 
 //connect mongodb
-
-let URL =
-  "mongodb+srv://shoaibmahmud1988_db_user:BmYX4fKvNd8eFVjb@ecommerce.whaqeeg.mongodb.net/ecommerce?appName=ecommerce";
-
 let option = {
   user: process.env.DB_USER,
   pass: process.env.DB_PASS,
   autoIndex: true,
   serverSelectionTimeoutMS: 5000,
 };
+ const URL = process.env.DB_URI
 
-//extra:
-// const URL =
-//   process.env.DB_URI ||
-//   "mongodb+srv://shoaibmahmud1988_db_user:BmYX4fKvNd8eFVjb@ecommerce.whaqeeg.mongodb.net/ecommerce?appName=ecommerce";
-
+ 
 mongoose
   .connect(URL, option)
   .then((res) => {
