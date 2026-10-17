@@ -59,8 +59,8 @@ app.use(mongoSanitize());
 app.use(hpp());
 
 app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb" }));
-// app.use(express.urlencoded({ limit: "50mb", extended: true }));
+//app.use(express.urlencoded({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3000 }); // 3000 requests per 15 minutes
 app.use(limiter);
