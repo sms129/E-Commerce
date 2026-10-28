@@ -149,7 +149,7 @@ exports.update = async (req, res) => {
 
     let updatedData = { email }; //only email because otherwise we have to change both email and pass. now we can change only one.
     //otherwise if we change only email the pass will remain empty string,and we couldnot login
-    const user = await adminModel.findOne({ email, _id });
+    const user = await adminModel.findOne({_id });
 
     if (!user) {
       return res
