@@ -1,42 +1,170 @@
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Paginate from "../helper/Paginate";
+import { ToWords } from "to-words";
+import { useCallback, useEffect, useRef, useState } from "react";
+import invoiceStore from "../store/invoiceStore";
+import Skeleton from "react-loading-skeleton";
+import { ErrorToast, formatDate } from "../helper/helper";
+import { baseURL } from "../helper/config";
+import { useReactToPrint } from "react-to-print";
 
 const AllOrders = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const per_page = 6;
+  const page_no = searchParams.get("page_no") || 1;
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  let {
+    allOrderListRequest,
+    totalAllOrderList,
+    allOrderList,
+    readSingleInvoiceSingleUser,
+    singleInvoiceSingleUserRequest,
+    updateInvoiceRequest,
+  } = invoiceStore();
+
+  useEffect(() => {
+    (async () => {
+      await allOrderListRequest(per_page, page_no, fromDate, toDate);
+    })();
+  }, [allOrderListRequest, fromDate, page_no, toDate]);
+
+  //! pagination function
+  const handelPageClick = async (event) => {
+    let page_no = event.selected;
+    await allOrderListRequest(per_page, page_no + 1, fromDate, toDate);
+
+    navigate(`/all-orders?page_no=${page_no + 1}`);
+  };
+
+  const handleDownload = () => {
+    try {
+      let url = baseURL + "/export-csv";
+      // If user gives dates, add them as query
+      if (fromDate && toDate) {
+        url += `?from=${fromDate}&to=${toDate}`;
+      }
+      // 📥 Open link (it will download automatically)
+      window.open(url, "_blank");
+    } catch (error) {
+      console.log(error);
+      ErrorToast("Something went wrong!");
+    }
+  };
+
+  let viewOrder = (id) => {
+    singleInvoiceSingleUserRequest(id);
+  };
+
+  const toWords = new ToWords({
+    localeCode: "en-IN",
+    converterOptions: {
+      currency: true,
+      ignoreDecimal: false,
+      ignoreZeroCurrency: false,
+      doNotAddOnly: false,
+      currencyOptions: {
+        // can be used to override defaults for the selected locale
+        name: "Taka",
+        plural: "Taka",
+        symbol: "Tk.",
+        fractionalUnit: {
+          name: "Paisa",
+          plural: "Paisa",
+          symbol: "",
+        },
+      },
+    },
+  });
+
+  const handleAfterPrint = useCallback(() => {
+    console.log("`onAfterPrint` called");
+  }, []);
+
+  const handleBeforePrint = useCallback(() => {
+    console.log("`onBeforePrint` called");
+    return Promise.resolve();
+  }, []);
+  const componentRef = useRef(null);
+  const printFn = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: "AwesomeFileName",
+    onAfterPrint: handleAfterPrint,
+    onBeforePrint: handleBeforePrint,
+    copyStyles: true, // 👈 copies styles from your app into print iframe
+    pageStyle: `
+    @page {
+      size: A4;
+      margin: 4mm;
+    }
+    body {
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+      font-family: Arial, sans-serif;
+      padding: 0px;
+    }
+    table {
+      border-collapse: collapse !important;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ccc !important;
+      padding: 6px !important;
+    }
+  `,
+  });
+
+  // update invoice
+  let updateInvoice = async (_id, user_id, deliver_status) => {
+    let res = await updateInvoiceRequest({ _id, user_id, deliver_status });
+    if (res) {
+      await allOrderListRequest(per_page, page_no, fromDate, toDate);
+    }
+  };
+
   return (
-    <div className="dashboard-body__content">
+    <div className='dashboard-body__content'>
       {/* ========================= Statement section start =========================== */}
-      <div className="card shadow-sm p-3 mb-4">
-        <div className="row g-3 align-items-end">
-          <div className="col-md-3">
-            <label className="form-label fw-semibold">From Date</label>
+      <div className='card shadow-sm p-3 mb-4'>
+        <div className='row g-3 align-items-end'>
+          <div className='col-md-3'>
+            <label className='form-label fw-semibold'>From Date</label>
             <input
-              type="date"
-              className="form-control"
-              value={"December 17, 2025"}
+              type='date'
+              className='form-control'
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
             />
           </div>
 
-          <div className="col-md-3">
-            <label className="form-label fw-semibold">To Date</label>
+          <div className='col-md-3'>
+            <label className='form-label fw-semibold'>To Date</label>
             <input
-              type="date"
-              className="form-control"
-              value={"December 17, 2025"}
+              type='date'
+              className='form-control'
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
             />
           </div>
 
-          <div className="col-md-3 text-center">
-            <button className="btn d-block btn-primary px-4 mt-2">
+          <div className='col-md-3 text-center'>
+            <button
+              onClick={handleDownload}
+              className='btn d-block btn-primary px-4 mt-2'
+            >
               Download CSV
             </button>
           </div>
         </div>
       </div>
-      <div className="row gy-4">
-        <div className="col-12">
-          <div className="card common-card border border-gray-five">
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table text-body mt--24">
+      <div className='row gy-4'>
+        <div className='col-12'>
+          <div className='card common-card border border-gray-five'>
+            <div className='card-body'>
+              <div className='table-responsive'>
+                <table className='table text-body mt--24'>
                   <thead>
                     <tr>
                       <th>Date</th>
@@ -50,61 +178,128 @@ const AllOrders = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>December 1, 2025</td>
-                      <td>Alex Johnson</td>
+                    {allOrderList?.length < 1 && <p>No data found!</p>}
 
-                      <td>
-                        <span>1</span>
-                      </td>
-                      <td>
-                        <span
-                          className={`badge text-capitalize rounded-pill bg-success`}
-                        >
-                          success
-                        </span>{" "}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge text-capitalize rounded-pill bg-warning`}
-                        >
-                          Pending
-                        </span>
-                      </td>
-                      <td>
-                        <button>
-                          <select
-                            // disabled={item?.deliver_status === "cancel"}
-                            className=" common-input border custom"
-                            defaultValue={"pending"}
-                          >
-                            <option value={"pending"}>Pending</option>
-                            <option value={"delivered"}>Delivered</option>
-                            <option value={"cancel"}>Cancel</option>
-                          </select>
-                        </button>
-                      </td>
+                    {allOrderList === null ? (
+                      <>
+                        <>
+                          {[...Array(6)].map(() => (
+                            <tr className='super_admin_all-product'>
+                              <td className='Skeleton'>
+                                <Skeleton count={1} />
+                              </td>
+                              <td className='Skeleton'>
+                                <Skeleton count={1} />
+                              </td>
+                              <td className='Skeleton'>
+                                <Skeleton count={1} />
+                              </td>
+                              <td className='Skeleton'>
+                                <Skeleton count={1} />
+                              </td>
+                              <td className='Skeleton'>
+                                <Skeleton count={1} />
+                              </td>
+                              <td className='Skeleton'>
+                                <Skeleton count={1} />
+                              </td>
+                              <td className='Skeleton'>
+                                <Skeleton count={1} />
+                              </td>
+                              <td className='Skeleton'>
+                                <Skeleton count={1} />
+                              </td>
+                            </tr>
+                          ))}
+                        </>
+                      </>
+                    ) : (
+                      <>
+                        {allOrderList?.map((item, index) => (
+                          <tr key={index}>
+                            <td>{formatDate(item?.createdAt)}</td>
+                            <td>{item?.cus_details?.[0]?.Name}</td>
 
-                      <td>
-                        <p> 1000</p>
-                      </td>
-                      <td>
-                        <button
-                          className="btn btn-success"
-                          data-bs-toggle="modal"
-                          data-bs-target={`#exampleModal_1`}
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
+                            <td>
+                              <span>{item?._id}</span>
+                            </td>
+                            <td>
+                              <span
+                                className={`badge text-capitalize rounded-pill ${
+                                  item?.payment_status === "success"
+                                    ? "bg-success"
+                                    : item?.payment_status === "pending"
+                                    ? "bg-warning"
+                                    : "bg-danger"
+                                }`}
+                              >
+                                {item?.payment_status}
+                              </span>
+                            </td>
+                            <td>
+                              <span
+                                className={`badge text-capitalize rounded-pill ${
+                                  item?.deliver_status === "delivered"
+                                    ? "bg-success"
+                                    : item?.deliver_status === "pending"
+                                    ? "bg-warning"
+                                    : "bg-danger"
+                                }`}
+                              >
+                                {item?.deliver_status}
+                              </span>
+                            </td>
+                            <td>
+                              <button>
+                                <select
+                                  onChange={(e) =>
+                                    updateInvoice(
+                                      item?._id,
+                                      item?.user_id,
+                                      e.target.value
+                                    )
+                                  }
+                                  className=' common-input border custom'
+                                  defaultValue={item?.deliver_status}
+                                >
+                                  <option value={"pending"}>Pending</option>
+                                  <option value={"delivered"}>Delivered</option>
+                                  <option value={"cancel"}>Cancel</option>
+                                </select>
+                              </button>
+                            </td>
+
+                            <td>
+                              <p> {item?.payable}</p>
+                            </td>
+                            <td>
+                              <button
+                                className='btn btn-success'
+                                data-bs-toggle='modal'
+                                data-bs-target={`#exampleModal_1`}
+                                onClick={() => viewOrder(item?._id)}
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </>
+                    )}
                   </tbody>
                 </table>
               </div>
-              <div className="flx-between justify-content-end gap-2">
-                <nav aria-label="Page navigation example">
+              <div className='flx-between justify-content-end gap-2'>
+                <nav aria-label='Page navigation example'>
                   <div>
-                    <Paginate page_no={1} per_page={5} totalCount={10} />
+                    {allOrderList?.length > 1 && (
+                      <Paginate
+                        handelPageClick={handelPageClick}
+                        page_no={page_no}
+                        per_page={per_page}
+                        totalCount={totalAllOrderList}
+                      />
+                    )}
                   </div>
                 </nav>
               </div>
@@ -117,146 +312,208 @@ const AllOrders = () => {
       {/*  */}
       <>
         <div
-          className="modal fade order_item"
+          className='modal fade order_item'
           id={`exampleModal_1`}
           tabIndex={-1}
-          aria-labelledby="exampleModalLabel"
-          aria-hidden="true"
+          aria-labelledby='exampleModalLabel'
+          aria-hidden='true'
         >
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h6 className="modal-title fs-5" id="exampleModalLabel">
+          <div className='modal-dialog'>
+            <div className='modal-content'>
+              <div className='modal-header'>
+                <h6 className='modal-title fs-5' id='exampleModalLabel'>
                   Super Admin Invoice View
                 </h6>
                 <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
+                  type='button'
+                  className='btn-close'
+                  data-bs-dismiss='modal'
+                  aria-label='Close'
                 />
               </div>
-              <div className="modal-body">
-                <div className="profile">
-                  <div className="row gy-4">
-                    <div className="col-12">
-                      <div className="container my-5">
+              <div className='modal-body'>
+                <div className='profile'>
+                  <div className='row gy-4'>
+                    <div className='col-12'>
+                      <div className='container my-5'>
                         {/* Invoice Content */}
-                        <div className="p-5 bg-white">
+                        <div className='p-5 bg-white' ref={componentRef}>
                           {/* Header */}
-                          <div className="row mb-4 border-bottom pb-3">
-                            <div className="col-sm-6">
-                              <h2 className="fw-bold">INVOICE</h2>
-                              <p className="mb-0">#INV no: 1</p>
-                              <p className="mb-0">
-                                #TRA no: f43rffd44rrrt3333bg
+                          <div className='row mb-4 border-bottom pb-3'>
+                            <div className='col-sm-6'>
+                              <h2 className='fw-bold'>INVOICE</h2>
+                              <p className='mb-0'>
+                                #INV no: {readSingleInvoiceSingleUser?._id}
                               </p>
-                              <small>Date: 01/01/2025</small>
+                              <p className='mb-0'>
+                                #TRA no: {readSingleInvoiceSingleUser?.tran_id}
+                              </p>
+                              <small>
+                                Date:{" "}
+                                {formatDate(
+                                  readSingleInvoiceSingleUser?.createdAt
+                                )}
+                              </small>
                             </div>
-                            <div className="col-sm-6 text-end">
-                              <h5 className="fw-bold">PixBO</h5>
-                              <p className="mb-0">123 Street, Chittagong</p>
-                              <p className="mb-0">support@pixbo.com</p>
-                              <p className="mb-0">+880 1234 567 890</p>
+                            <div className='col-sm-6 text-end'>
+                              <h5 className='fw-bold'>PixBO</h5>
+                              <p className='mb-0'>123 Street, Chittagong</p>
+                              <p className='mb-0'>support@pixbo.com</p>
+                              <p className='mb-0'>+880 1234 567 890</p>
                             </div>
                           </div>
 
                           {/* Billing Details */}
-                          <div className="row mb-4">
-                            <div className="col-sm-6">
-                              <h6 className="fw-bold">Bill To:</h6>
-                              <p className="mb-0">Alex Johnson</p>
+                          <div className='row mb-4'>
+                            <div className='col-sm-6'>
+                              <h6 className='fw-bold'>Bill To:</h6>
+                              <p className='mb-0'>
+                                {
+                                  readSingleInvoiceSingleUser?.cus_details?.[0]
+                                    ?.Name
+                                }
+                              </p>
 
-                              <p className="mb-0">alex.johnson@example.com</p>
-                              <p className="mb-0">+880 9876 543 210</p>
-                              <p className="mb-0">
-                                123 Main Street, Chittagong
+                              <p className='mb-0'>
+                                {
+                                  readSingleInvoiceSingleUser?.cus_details?.[0]
+                                    ?.Email
+                                }
+                              </p>
+                              <p className='mb-0'>
+                                {
+                                  readSingleInvoiceSingleUser?.cus_details?.[0]
+                                    ?.Phone
+                                }
+                              </p>
+                              <p className='mb-0'>
+                                {
+                                  readSingleInvoiceSingleUser?.cus_details?.[0]
+                                    ?.Address
+                                }
                               </p>
                             </div>
-                            <div className="col-sm-6 text-end">
-                              <h6 className="fw-bold">Payment information: </h6>
-                              <p className="mb-1">
+                            <div className='col-sm-6 text-end'>
+                              <h6 className='fw-bold'>Payment information: </h6>
+                              <p className='mb-1'>
                                 Payment Status:{" "}
                                 <span
-                                  className={`fw-bold  text-capitalize text-success`}
+                                  className={`fw-bold  text-capitalize ${
+                                    readSingleInvoiceSingleUser?.payment_status ===
+                                    "success"
+                                      ? "text-success"
+                                      : readSingleInvoiceSingleUser?.payment_status ===
+                                        "cancel"
+                                      ? "text-danger"
+                                      : "text-danger"
+                                  }`}
                                 >
-                                  success
+                                  {readSingleInvoiceSingleUser?.payment_status}
                                 </span>
                               </p>
-                              <p className="mb-1">
+                              <p className='mb-1'>
                                 Deliver Status:{" "}
                                 <span
-                                  className={`fw-bold text-capitalize bg-success`}
+                                  className={`fw-bold text-capitalize ${
+                                    readSingleInvoiceSingleUser?.deliver_status ===
+                                    "delivered"
+                                      ? "text-success"
+                                      : readSingleInvoiceSingleUser?.deliver_status ===
+                                        "pending"
+                                      ? "text-warning"
+                                      : "text-danger"
+                                  }`}
                                 >
-                                  delivered
+                                  {readSingleInvoiceSingleUser?.deliver_status}
                                 </span>
                               </p>
-                              <p className="mb-0">
+                              <p className='mb-0'>
                                 Total payable:{" "}
-                                <span className="fw-bold text-uppercase">
-                                  1500 tk.
+                                <span className='fw-bold text-uppercase'>
+                                  {readSingleInvoiceSingleUser?.payable} tk.
                                 </span>
                               </p>
                             </div>
                           </div>
 
                           {/* Table */}
-                          <div className="table-responsive invoice mb-4">
-                            <table className="table  align-middle">
-                              <thead className="table-light">
+                          <div className='table-responsive invoice mb-4'>
+                            <table className='table  align-middle'>
+                              <thead className='table-light'>
                                 <tr>
                                   <th>Product</th>
-                                  <th className="text-center">Color</th>
-                                  <th className="text-center">Size</th>
-                                  <th className="text-center">Quantity</th>
-                                  <th className="text-center">Price</th>
-                                  <th className="text-end">Total</th>
+                                  <th className='text-center'>Color</th>
+                                  <th className='text-center'>Size</th>
+                                  <th className='text-center'>Quantity</th>
+                                  <th className='text-center'>Price</th>
+                                  <th className='text-end'>Total</th>
                                 </tr>
                               </thead>
-                              <tbody className="text-dark">
-                                <tr>
-                                  <td className="text-start">Baby Toy Car</td>
+                              <tbody className='text-dark'>
+                                {readSingleInvoiceSingleUser?.invoiceProducts?.map(
+                                  (item, index) => (
+                                    <tr key={index}>
+                                      <td className='text-start'>
+                                        {item?.product_name}
+                                      </td>
 
-                                  <td>Red</td>
-                                  <td>Medium</td>
-                                  <td>2</td>
-                                  <td>750 Tk.</td>
-                                  <td className="text-end">1500 Tk.</td>
-                                </tr>
+                                      <td>{item?.color}</td>
+                                      <td>{item?.size}</td>
+                                      <td>{item?.qty}</td>
+                                      <td>{item?.price} Tk.</td>
+                                      <td className='text-end'>
+                                        {" "}
+                                        {item?.qty * item?.price} Tk.
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
                               </tbody>
                             </table>
                           </div>
 
                           {/* Summary */}
-                          <div className="row justify-content-end">
-                            <div className="col-8">
-                              <p className="text-danger small fst-italic">
-                                One thousand five hundred
+                          <div className='row justify-content-end'>
+                            <div className='col-8'>
+                              <p className='text-danger small fst-italic'>
+                                {toWords.convert(
+                                  Number(
+                                    readSingleInvoiceSingleUser?.payable || 0
+                                  )
+                                )}{" "}
                               </p>
                             </div>
-                            <div className="col-4">
-                              <ul className="list-unstyled">
-                                <li className="d-flex justify-content-between mb-2">
-                                  <span>Subtotal:</span> <span>1275 Tk.</span>
+                            <div className='col-4'>
+                              <ul className='list-unstyled'>
+                                <li className='d-flex justify-content-between mb-2'>
+                                  <span>Subtotal:</span>{" "}
+                                  <span>
+                                    {readSingleInvoiceSingleUser?.total} Tk.
+                                  </span>
                                 </li>
-                                <li className="d-flex justify-content-between mb-2">
+                                <li className='d-flex justify-content-between mb-2'>
                                   <span>Vat (15%):</span>{" "}
-                                  <span>191.25 Tk.</span>
+                                  <span>
+                                    {readSingleInvoiceSingleUser?.vat} Tk.
+                                  </span>
                                 </li>
-                                <li className="d-flex justify-content-between mb-2">
+                                <li className='d-flex justify-content-between mb-2'>
                                   <span>Shipping cost:</span>{" "}
                                   <span>75 Tk.</span>
                                 </li>
-                                <li className="d-flex justify-content-between border-top pt-2 fw-bold">
-                                  <span>Total:</span> <span>1500 Tk.</span>
+                                <li className='d-flex justify-content-between border-top pt-2 fw-bold'>
+                                  <span>Total:</span>{" "}
+                                  <span>
+                                    {readSingleInvoiceSingleUser?.payable} Tk.
+                                  </span>
                                 </li>
                               </ul>
                             </div>
                           </div>
 
                           {/* Footer */}
-                          <div className="text-center mt-5 text-muted small">
-                            <p className="mb-1">Thank you for your purchase!</p>
+                          <div className='text-center mt-5 text-muted small'>
+                            <p className='mb-1'>Thank you for your purchase!</p>
                             <p>
                               This invoice was generated electronically and is
                               valid without a signature.
@@ -268,15 +525,19 @@ const AllOrders = () => {
                   </div>
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className='modal-footer'>
                 <button
-                  type="button"
-                  className="btn btn-secondary"
-                  data-bs-dismiss="modal"
+                  type='button'
+                  className='btn btn-secondary'
+                  data-bs-dismiss='modal'
                 >
                   Close
                 </button>
-                <button type="button" className="btn btn-primary">
+                <button
+                  onClick={printFn}
+                  type='button'
+                  className='btn btn-primary'
+                >
                   Print
                 </button>
               </div>
