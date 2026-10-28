@@ -6,14 +6,14 @@ import { FaAngleRight } from "react-icons/fa";
 import adminStore from "../store/adminStore";
 
 const MasterLayout = ({ children }) => {
+  const navigate = useNavigate();
   let [active, setActive] = useState(false);
   let [show, setShow] = useState(false);
-  const navigate = useNavigate();
 
   let { adminLogoutRequest } = adminStore();
 
-  let logout = () => {
-    let res = adminLogoutRequest();
+  let logout = async () => {
+    let res = await adminLogoutRequest();
     if (res) {
       navigate("/login");
     }
@@ -92,7 +92,7 @@ const MasterLayout = ({ children }) => {
                 </li>
                 <li className='sidebar-list__item'>
                   <NavLink
-                    to='/all-product'
+                    to='/all-products'
                     className={(navData) =>
                       navData.isActive
                         ? "sidebar-list__link activePage"
