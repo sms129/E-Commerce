@@ -62,7 +62,7 @@ const adminStore = create((set) => ({
   adminVerifyRequest: async () => {
     try {
       await axios.get(baseURL + `/admin-verify`, {
-        withCredentials: true,
+        withCredentials: true,  //so that cookie can get accepted 
         credentials: "include",
       });
 
