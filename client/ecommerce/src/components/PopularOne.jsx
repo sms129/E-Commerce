@@ -1,12 +1,22 @@
 import { Link } from "react-router-dom";
 import Slider from "react-slick";
+import categoryStore from "../store/categoryStore";
+import { useEffect } from "react";
+import { baseURLFile } from "../helper/config";
 
 const PopularOne = () => {
+  let { allCategory, allCategoryRequest } = categoryStore();
+  useEffect(() => {
+    (async () => {
+      await allCategoryRequest(100, 1);
+    })();
+  }, [allCategoryRequest]);
+
   function SampleNextArrow(props) {
     const { className, onClick } = props;
     return (
       <button className={className} onClick={onClick}>
-        <i className="las la-arrow-right" />
+        <i className='las la-arrow-right' />
       </button>
     );
   }
@@ -15,7 +25,7 @@ const PopularOne = () => {
 
     return (
       <button className={className} onClick={onClick}>
-        <i className="las la-arrow-left" />
+        <i className='las la-arrow-left' />
       </button>
     );
   }
@@ -59,104 +69,40 @@ const PopularOne = () => {
     ],
   };
   return (
-    <section className="popular padding-y-120 overflow-hidden">
-      <div className="container container-two">
-        <div className="section-heading style-left mb-64">
-          <h5 className="section-heading__title">Popular Categories</h5>
+    <section className='popular padding-y-120 overflow-hidden'>
+      <div className='container container-two'>
+        <div className='section-heading style-left mb-64'>
+          <h5 className='section-heading__title'>Popular Categories</h5>
         </div>
-        <div className="popular-slider arrow-style-two row gy-4">
+        <div className='popular-slider arrow-style-two row gy-4'>
           <Slider {...settings}>
-            <div>
-              <Link
-                to={`all-products?category_id=0&brand_id=0&remark=0&keyword=0&per_page=12&page_no=1`}
-                className="popular-item w-100"
-              >
-                <span className="popular-item__icon">
-                  <img
-                    src={`https://placehold.co/60x60`}
-                    alt=""
-                  />{" "}
-                </span>
-                <h6 className="popular-item__title font-18">Health & Beauty</h6>
-                <p>
-                  <span className="popular-item__qty text-body">0</span>
-                </p>
-              </Link>
-            </div>
-            <div>
-              <Link
-                to={`all-products?category_id=0&brand_id=0&remark=0&keyword=0&per_page=12&page_no=1`}
-                className="popular-item w-100"
-              >
-                <span className="popular-item__icon">
-                  <img
-                    src={`https://placehold.co/60x60`}
-                    alt=""
-                  />{" "}
-                </span>
-                <h6 className="popular-item__title font-18">Home & Kitchen</h6>
-                <p>
-                  <span className="popular-item__qty text-body">1</span>
-                </p>
-              </Link>
-            </div>
-            <div>
-              <Link
-                to={`all-products?category_id=0&brand_id=0&remark=0&keyword=0&per_page=12&page_no=1`}
-                className="popular-item w-100"
-              >
-                <span className="popular-item__icon">
-                  <img
-                    src={`https://placehold.co/60x60`}
-                    alt=""
-                  />{" "}
-                </span>
-                <h6 className="popular-item__title font-18">Electronics</h6>
-                <p>
-                  <span className="popular-item__qty text-body">3</span>
-                </p>
-              </Link>
-            </div>
-            <div>
-              <Link
-                to={`all-products?category_id=0&brand_id=0&remark=0&keyword=0&per_page=12&page_no=1`}
-                className="popular-item w-100"
-              >
-                <span className="popular-item__icon">
-                  <img
-                    src={`https://placehold.co/60x60`}
-                    alt=""
-                  />{" "}
-                </span>
-                <h6 className="popular-item__title font-18">Women's Fashion</h6>
-                <p>
-                  <span className="popular-item__qty text-body">5</span>
-                </p>
-              </Link>
-            </div>
-            <div>
-              <Link
-                to={`all-products?category_id=0&brand_id=0&remark=0&keyword=0&per_page=12&page_no=1`}
-                className="popular-item w-100"
-              >
-                <span className="popular-item__icon">
-                  <img
-                    src={`https://placehold.co/60x60`}
-                    alt=""
-                  />{" "}
-                </span>
-                <h6 className="popular-item__title font-18">Men's Fashion</h6>
-                <p>
-                  <span className="popular-item__qty text-body">2</span>
-                </p>
-              </Link>
-            </div>
+            {allCategory?.map((item, index) => (
+              <div key={index}>
+                <Link
+                  to={`all-products?category_id=${item?._id}&brand_id=0&remark=0&keyword=0&per_page=12&page_no=1`}
+                  className='popular-item w-100'
+                >
+                  <span className='popular-item__icon'>
+                    <img src={`${baseURLFile}/${item?.category_img}`} alt='' />{" "}
+                  </span>
+                  <h6 className='popular-item__title font-18'>
+                    {item?.category_name}
+                  </h6>
+                  <p>
+                    <span className='popular-item__qty text-body'>
+                      {" "}
+                      {item?.totalProduct}
+                    </span>
+                  </p>
+                </Link>
+              </div>
+            ))}
           </Slider>
         </div>
-        <div className="popular__button text-center">
+        <div className='popular__button text-center'>
           <Link
-            to="/all-products?category_id=0&brand_id=0&remark=0&keyword=0&per_page=12&page_no=1"
-            className="font-18 fw-600 text-heading hover-text-main text-decoration-underline font-heading"
+            to='/all-products?category_id=0&brand_id=0&remark=0&keyword=0&per_page=12&page_no=1'
+            className='font-18 fw-600 text-heading hover-text-main text-decoration-underline font-heading'
           >
             Explore More
           </Link>
