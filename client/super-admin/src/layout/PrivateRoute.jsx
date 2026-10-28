@@ -6,11 +6,12 @@ const PrivateRoute = ({ children }) => {
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(true); // Add loading state
 
-  let { adminVerifyRequest } = adminStore();
+  let { adminVerifyRequest, adminRequest } = adminStore();
   useEffect(() => {
     (async () => {
       try {
         await adminVerifyRequest();
+        await adminRequest();
         let result = getToken();
 
         console.log(result);
@@ -28,7 +29,7 @@ const PrivateRoute = ({ children }) => {
         setLoading(false); // Set loading to false after verification
       }
     })();
-  }, []);
+  }, [adminRequest, adminVerifyRequest]);
 
   if (loading) {
     return <></>;
