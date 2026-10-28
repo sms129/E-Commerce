@@ -1,6 +1,38 @@
 import { Link } from "react-router-dom";
+import cartStore from "../store/cartStore";
+import invoiceStore from "../store/invoiceStore";
+import userStore from "../store/userStore";
+import { useEffect } from "react";
+import { formatDate } from "../helper/helper";
 
 const CartPersonal = () => {
+  let { allCart, allCartRequest } = cartStore();
+  let { createInvoiceLoading, createInvoiceRequest } = invoiceStore();
+  let { user } = userStore();
+  let vat = 0.15; // 15% vat
+  let shipping = 75;
+
+  useEffect(() => {
+    (async () => {
+      await allCartRequest();
+    })();
+  }, [allCartRequest]);
+
+  let subTotal = allCart?.reduce(
+    (sum, item) =>
+      sum +
+      item?.qty *
+        parseInt(
+          item?.product?.is_discount === true
+            ? item?.product?.discount_price
+            : item?.product?.price
+        ),
+    0
+  );
+
+  let paySubmit = async () => {
+    createInvoiceRequest();
+  };
 
   return (
     <section className='cart-personal padding-y-120'>
@@ -23,7 +55,7 @@ const CartPersonal = () => {
                         <span className='text text-heading fw-500'>Email</span>
                       </span>
                       <span className='profile-info-list__info'>
-                        user@user.com
+                        {user?.email}
                       </span>
                     </li>
 
@@ -34,7 +66,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        Alex
+                        {user?.cus_name?.length > 0 ? (
+                          user?.cus_name
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill name field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -44,7 +82,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        *** Please fill address field!
+                        {user?.cus_add?.length > 0 ? (
+                          user?.cus_add
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill address field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -52,9 +96,13 @@ const CartPersonal = () => {
                         <span className='text text-heading fw-500'>City</span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill city field!
-                        </span>
+                        {user?.cus_city?.length > 0 ? (
+                          user?.cus_city
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill city field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -64,9 +112,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill Country field!
-                        </span>
+                        {user?.cus_country?.length > 0 ? (
+                          user?.cus_country
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill Country field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -74,9 +126,13 @@ const CartPersonal = () => {
                         <span className='text text-heading fw-500'>Fax</span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill fax field!
-                        </span>
+                        {user?.cus_fax?.length > 0 ? (
+                          user?.cus_fax
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill fax field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -84,9 +140,13 @@ const CartPersonal = () => {
                         <span className='text text-heading fw-500'>Phone</span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill phone field!
-                        </span>
+                        {user?.cus_phone?.length > 0 ? (
+                          user?.cus_phone
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill phone field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -96,9 +156,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill postcode field!
-                        </span>
+                        {user?.cus_postcode?.length > 0 ? (
+                          user?.cus_postcode
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill postcode field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -106,9 +170,13 @@ const CartPersonal = () => {
                         <span className='text text-heading fw-500'>State</span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill state field!
-                        </span>
+                        {user?.cus_state?.length > 0 ? (
+                          user?.cus_state
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill state field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -118,9 +186,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill shipping name field!
-                        </span>
+                        {user?.ship_name?.length > 0 ? (
+                          user?.ship_name
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill shipping name field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -130,9 +202,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill shipping address field!
-                        </span>
+                        {user?.ship_add?.length > 0 ? (
+                          user?.ship_add
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill shipping address field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -142,9 +218,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill shipping city field!
-                        </span>
+                        {user?.ship_city?.length > 0 ? (
+                          user?.ship_city
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill shipping city field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -154,9 +234,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill shipping country field!
-                        </span>
+                        {user?.ship_country?.length > 0 ? (
+                          user?.ship_country
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill shipping country field!
+                          </span>
+                        )}
                       </span>
                     </li>
 
@@ -167,9 +251,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill shipping phone field!
-                        </span>
+                        {user?.ship_phone?.length > 0 ? (
+                          user?.ship_phone
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill shipping phone field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -179,9 +267,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill shipping postcode field!
-                        </span>
+                        {user?.ship_postcode?.length > 0 ? (
+                          user?.ship_postcode
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill shipping postcode field!
+                          </span>
+                        )}
                       </span>
                     </li>
                     <li className='profile-info-list__item'>
@@ -191,9 +283,13 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        <span className='text-danger'>
-                          *** Please fill shipping state field!
-                        </span>
+                        {user?.ship_state?.length > 0 ? (
+                          user?.ship_state
+                        ) : (
+                          <span className='text-danger'>
+                            *** Please fill shipping state field!
+                          </span>
+                        )}
                       </span>
                     </li>
 
@@ -209,7 +305,7 @@ const CartPersonal = () => {
                         </span>
                       </span>
                       <span className='profile-info-list__info'>
-                        Dec 1, 2025
+                        {formatDate(user?.createdAt)}
                       </span>
                     </li>
                   </ul>
@@ -228,9 +324,11 @@ const CartPersonal = () => {
                 Back
               </Link>
               <button
+                onClick={paySubmit}
+                disabled={createInvoiceLoading}
                 className='btn btn-main flx-align gap-2 pill btn-lg'
               >
-                Proceed To Payment
+                {createInvoiceLoading ? "🛻 Loading..." : "Proceed To Payment"}
               </button>
             </div>
           </div>
@@ -241,26 +339,26 @@ const CartPersonal = () => {
               <ul className='billing-list'>
                 <li className='billing-list__item flx-between'>
                   <span className='text text-heading fw-500'>
-                    You have 5 items
+                    You have {allCart?.length} items
                   </span>
                   <span className='amount text-heading fw-500'>
-                    ৳2222
+                    ৳{subTotal}
                   </span>
                 </li>
                 <li className='billing-list__item flx-between'>
                   <span className='text text-heading fw-500'>Vat(15%)</span>
-                  <span className='amount text-body'>৳{2222 * 5}</span>
+                  <span className='amount text-body'>৳{subTotal * vat}</span>
                 </li>
                 <li className='billing-list__item flx-between'>
                   <span className='text text-heading fw-500'>Shipping Fee</span>
-                  <span className='amount text-body'>৳{2222}</span>
+                  <span className='amount text-body'>৳{shipping}</span>
                 </li>
                 <li className='billing-list__item flx-between'>
                   <span className='text text-heading font-20 fw-500 font-heading'>
                     Total
                   </span>
                   <span className='amount text-heading font-20 fw-500 font-heading'>
-                    ৳{2222 + 2222 * 2 + 2222}
+                    ৳{subTotal + subTotal * vat + shipping}
                   </span>
                 </li>
               </ul>

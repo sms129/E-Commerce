@@ -14,9 +14,6 @@ const AllProductPage = () => {
       {/* HeaderOne */}
       <HeaderOne />
 
-      {/* BreadcrumbSearch */}
-      {/* <BreadcrumbSearch /> */}
-
       {/* AllProduct */}
       <AllProduct />
 
