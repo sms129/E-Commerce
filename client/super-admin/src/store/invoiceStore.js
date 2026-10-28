@@ -20,7 +20,7 @@ const invoiceStore = create((set) => ({
       if (res?.data?.success === true) {
         set({ createInvoiceLoading: false });
         SuccessToast(res?.data?.message);
-        window.location.href = res?.data?.data?.GatewayPageURL;
+        window.location.href = res?.data?.data?.GatewayPageURL; //giving the payment page to users
         return true;
       } else {
         set({ createInvoiceLoading: false });
